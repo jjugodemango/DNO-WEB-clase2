@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="utf-8" />
+        <title>Práctica (para la clase)</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                text-align: center;
+                font-family: Helvetica, Arial, sans-serif;
+            }
+          
+        
+
+            h1 { padding: 1vh 15vw; }
+            h2, p { padding: .5vh 0;}
+            .subtitulo {  font-size: smaller}
+
+            header, article, footer { padding: 2vh 0; }
+            header, article {
+              border-bottom: 0.5px dashed FireBrick;
+              margin: 0 10vw
+            }
+
+            div { padding: 2vh 6vw; }
+        </style>
+    </head>
+    <body>
+
+        <header>
+            <h1>Ejercicio 2</h1>
+        </header>
+
+        <main>
+
+            <!-- GRÁFICA 1: línea de tiempo -->
+            <article>
+                <h2>Evolución de la tarifa del servicio RED en horario punta y la tarifa escolar en Santiago</h2>
+                <p class=subtitulo>Considerando el último valor por año</p>
+                <div>
+                    <svg viewBox="0 0 718 250">
+                        <!-- El grupo se voltea verticalmente para que Y crezca hacia arriba (en SVG crece hacia abajo por defecto) -->
+                        <g transform="translate(0,195) scale(1,-1)" id="lineas"></g> <!-- se voltea porque el 0,0 de un svg está arriba a la izquierda de un cuadrado -->
+                        <g id="years"></g> <!-- se pone years porque no se puede usar la enye, n con squiggly arriba.-->
+                    
+                        <g transform="translate(260, 230)">
+                            <rect x="0" y="0" width="12" height="4" fill="Crimson"/>
+                            <text x="17" y="6" font-size="12">Tarifa Horario Punta</text> //120px ancho
+                            <rect x="142" y="0" width="12" height="4" fill="LightBlue"/>
+                            <text x="157" y="6" font-size="12">Tarifa escolar</text>
+                        </g>
+                  </svg>
+                </div>
+            </article>
+                
+            <!-- GRÁFICA 2: barras horizontales -->
+            <article>
+                <h2>Cantidad de Recorridos RED de Micro por Zona en Santiago</h2>
+                <p class="subtitulo">Mapa de las <a href="https://inciclopedia.org/wiki/Archivo:Transantiago_zonas.PNG" target="_blank">zonas</a></p>
+                <div>
+                    <svg viewBox="0 0 500 150" id="barras"></svg>
+                </div>
+            </article>
+
+        </main>
+
+        <footer>
+            <p class="subtitulo">Datos sacados de artículo de Red Metropolitana de Movilidad en <a href="https://es.wikipedia.org/wiki/Red_Metropolitana_de_Movilidad#Infraestructura_asociada" target="_blank">Wikipedia</a></></p>
+        </footer>
+
+        <script>
+            // ── GRÁFICA 1: línea ──────────────────────────────────────────────
+            // Fuente: "https://es.wikipedia.org/wiki/Anexo:Tarifas_del_transporte_público_en_Santiago_de_Chile", ver tabla 2.
+          
+            var lineal = { //primer paso: se declaran pasoso
+                anos:   [2007, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2018, 2019, 2020, 2023, 2024, 2025, 2026],
+                punta: [420, 460, 580, 640, 670, 680, 700, 720, 740, 780, 800, 800, 810, 850, 870, 895]
+            }; 
+            //declaracion de variable=var, nombre de variable=lineal, asignacion de datos a la variable= ´=´
+            
+            //datos asignados en estructura de objeto= ´{}´, indice y valor= ´censo´ y lo que está dentro de ´[]´* array*
+            var coordenadas = ""; // acumulará los pares x,y de la polyline, la declara la variable (crea) pero vacia 
+            var etiquetas   = ""; // acumulará los textos con los años
+            
+            var lineal2 = { //primer paso: se declaran pasoso
+                anos:   [2007, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2018, 2019, 2020, 2023, 2024, 2025, 2026],
+                escolar: [130, 130, 160, 180, 190, 200, 200, 210, 210, 220, 230, 230, 230, 250, 250, 260]
+            }; 
+            
+            lineal.punta.forEach(function(tarifap, i) { //inicio loop
+                // x: cada censo se separa 50 unidades; sumamos 7 para centrar el texto
+                var x = (i * 50) + 7;
+                // y: escalamos la población para que quepa en el SVG (÷ 40000)
+                var y = Math.round(tarifap * 0.2);
+              
+                coordenadas += x + "," + y + " ";
+                etiquetas   += `<text x="${i * 50}" y="205" font-size="8">${lineal.anos[i]}</text>`;
+            }); //reinicia loop
+
+            var coordenadas2 = "";
+            
+            lineal2.escolar.forEach(function(valor, i) {
+                var x = (i * 50) + 7;
+                var y = Math.round(valor * 0.2); // ojo: necesitarías ajustar esta escala
+                coordenadas2 += x + "," + y + " ";
+});
+            // Dibujamos la línea conectando todos los puntos
+            document.querySelector("#lineas").innerHTML =
+                `<polyline points="${coordenadas}" fill="none" stroke="Crimson" stroke-width="3" />`;
+            document.querySelector("#lineas").innerHTML +=
+                `<polyline points="${coordenadas2}" fill="none" stroke="LightBlue" stroke-width="3" />`;
+            
+          // Agregamos los años debajo de la línea
+            document.querySelector("#years").innerHTML = etiquetas;
+
+
+            // ── GRÁFICA 2: barras ─────────────────────────────────────────────
+
+            // Fuente: https://es.wikipedia.org/wiki/Anexo:Regiones_de_Chile_por_población
+            var zonas = [
+                { zona: "Zona A",       numero: 0  }, //los numeros se ponen sin punto a excepcion de los decimales
+                { zona: "Zona B",       numero: 30 },
+                { zona: "Zona C",       numero: 26 },
+                { zona: "Zona D",       numero: 21 },
+                { zona: "Zona E",       numero: 20 },
+                { zona: "Zona F",       numero: 27 },
+                { zona: "Zona G",       numero: 20 },
+                { zona: "Zona H",       numero: 17 },
+                { zona: "Zona I",       numero: 25 },
+                { zona: "Zona J",       numero: 27 },
+            ];
+
+            zonas.forEach(function(d, i) {
+                // El ancho de cada barra es proporcional a la población
+                var ancho = d.numero*10+5; //tengo una variable que es ancho, que toma cada numero dividido por 20mil
+
+                // Cada fila baja 15 unidades con translate (verticalmente) 
+                document.querySelector("#barras").innerHTML +=
+                        `<g transform="translate(20, ${i * 15})"> 
+                        <rect x="20" y="0" fill="Crimson" width="${ancho}" height="10" />
+                        <text x="0" y="7" fill="black" font-size="5">${d.zona}</text>
+                        <text x="${20 + ancho + 3}" y="7" font-size="6">${new Intl.NumberFormat("es-ES").format(d.numero)} recorridos</text>
+                    </g>`; //grafico construido en base a rectangulos y 2 textos (uno región y otro numero) , se cambia el formato de numero a español
+            });
+        </script>
+    </body>
+</html>
